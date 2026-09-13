@@ -1,0 +1,228 @@
+{
+  // Strict structured-output contract for the message_analyser agent.
+  // A single message may require zero, one, or several forecasting-tool calls.
+  // Return them in `tool_calls`, in the exact order they must be executed.
+  // Each call carries its own parameters; fill only the parameters that call
+  // needs and leave every other parameter null. Return an empty array when no
+  // tool should be called. Execution is sequential in array order, never async.
+  //
+  // Parameter names are prefixed per tool where the same concept appears in
+  // multiple tools (stream_value, one_off_amount, schedule_amount, ...) so the
+  // agent can map each call to its own validated parameter model.
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tool_calls": {
+      "type": "array",
+      "description": "Ordered tool calls for this message; empty when none apply.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tool": {
+            "type": "string",
+            "enum": [
+              "update_recurring_stream",
+              "apply_one_off_adjustment",
+              "reschedule_transaction_date",
+              "schedule_receivable_or_payable",
+              "resolve_pending_transaction",
+              "flag_internal_transfer",
+              "apply_liquidity_hold",
+              "mark_informational_or_unconfirmed"
+            ],
+            "description": "Best-fit tool for this call."
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "One or two sentences citing the message evidence for this call."
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Confidence from 0.0 to 1.0 in this tool call."
+          },
+
+          "stream_id": {
+            "type": ["string", "null"],
+            "description": "Tool 1: exact stream_id from CANDIDATE_STREAMS to change."
+          },
+          "effective_date": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "Tool 1: first date the stream change applies (YYYY-MM-DD)."
+          },
+          "adjustment_mode": {
+            "type": ["string", "null"],
+            "enum": ["set_fixed_amount", "percentage_multiplier", "terminate_stream"],
+            "description": "Tool 1: how to change the stream."
+          },
+          "stream_value": {
+            "type": ["number", "null"],
+            "description": "Tool 1: fixed amount (set_fixed_amount) or multiplier (percentage_multiplier)."
+          },
+
+          "target_category": {
+            "type": ["string", "null"],
+            "description": "Tool 2: category of the instance to override or the one-off entry."
+          },
+          "target_date": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "Tool 2: date of the instance or one-off entry (YYYY-MM-DD)."
+          },
+          "adjustment_type": {
+            "type": ["string", "null"],
+            "enum": ["override_instance_amount", "add_lump_sum_credit", "deduct_lump_sum"],
+            "description": "Tool 2: kind of one-off adjustment."
+          },
+          "one_off_amount": {
+            "type": ["number", "null"],
+            "description": "Tool 2: amount of the override or lump sum."
+          },
+
+          "related_event_id": {
+            "type": ["string", "null"],
+            "description": "Tool 3/5: financial event the message refers to."
+          },
+          "reschedule_category": {
+            "type": ["string", "null"],
+            "description": "Tool 3: category of the transaction to move when no event id is given."
+          },
+          "original_date": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "Tool 3: currently scheduled date (YYYY-MM-DD)."
+          },
+          "new_settlement_date": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "Tool 3: replacement settlement date (YYYY-MM-DD)."
+          },
+
+          "direction": {
+            "type": ["string", "null"],
+            "enum": ["credit", "debit"],
+            "description": "Tool 4: cash-flow direction of the new flow."
+          },
+          "schedule_category": {
+            "type": ["string", "null"],
+            "description": "Tool 4: category of the new receivable or payable."
+          },
+          "schedule_amount": {
+            "type": ["number", "null"],
+            "description": "Tool 4: amount of the new flow."
+          },
+          "currency": {
+            "type": ["string", "null"],
+            "enum": ["INR", "ZAR", "IDR", "USD", "EUR"],
+            "description": "Tool 4: currency of the amount."
+          },
+          "due_or_settlement_date": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "Tool 4: first due or settlement date (YYYY-MM-DD)."
+          },
+          "is_recurring": {
+            "type": ["boolean", "null"],
+            "description": "Tool 4: true when the flow repeats."
+          },
+          "recurrence_interval_days": {
+            "type": ["integer", "null"],
+            "description": "Tool 4: days between repeats when is_recurring is true."
+          },
+
+          "action": {
+            "type": ["string", "null"],
+            "enum": ["confirm_settled", "update_final_amount", "hold_under_dispute", "cancel_event"],
+            "description": "Tool 5: how the pending transaction is resolved."
+          },
+          "settled_amount": {
+            "type": ["number", "null"],
+            "description": "Tool 5: final settled amount, when known."
+          },
+          "expected_settlement_days": {
+            "type": ["integer", "null"],
+            "description": "Tool 5: expected days until settlement."
+          },
+
+          "transaction_ref": {
+            "type": ["string", "null"],
+            "description": "Tool 6: reference of the internal transfer to neutralise."
+          },
+          "neutralize_cash_flow": {
+            "type": ["boolean", "null"],
+            "description": "Tool 6: true to remove the transfer from cash flow."
+          },
+
+          "hold_amount": {
+            "type": ["number", "null"],
+            "description": "Tool 7: amount restricted until the hold releases."
+          },
+          "release_date": {
+            "type": ["string", "null"],
+            "format": "date",
+            "description": "Tool 7: date the hold releases (YYYY-MM-DD)."
+          },
+          "hold_reason": {
+            "type": ["string", "null"],
+            "description": "Tool 7: short reason for the hold."
+          },
+
+          "informational_kind": {
+            "type": ["string", "null"],
+            "enum": [
+              "unrealized_market_valuation",
+              "unapproved_variable_income",
+              "unverified_contingent_claim"
+            ],
+            "description": "Tool 8: kind of non-cash or unconfirmed information."
+          },
+          "exclude_from_cash_forecast": {
+            "type": ["boolean", "null"],
+            "description": "Tool 8: true to keep the notice out of the cash forecast."
+          },
+          "notes": {
+            "type": ["string", "null"],
+            "description": "Tool 8: short note describing the excluded information."
+          }
+        },
+        "required": [
+          "tool",
+          "reasoning",
+          "confidence",
+          "stream_id",
+          "effective_date",
+          "adjustment_mode",
+          "stream_value",
+          "target_category",
+          "target_date",
+          "adjustment_type",
+          "one_off_amount",
+          "related_event_id",
+          "reschedule_category",
+          "original_date",
+          "new_settlement_date",
+          "direction",
+          "schedule_category",
+          "schedule_amount",
+          "currency",
+          "due_or_settlement_date",
+          "is_recurring",
+          "recurrence_interval_days",
+          "action",
+          "settled_amount",
+          "expected_settlement_days",
+          "transaction_ref",
+          "neutralize_cash_flow",
+          "hold_amount",
+          "release_date",
+          "hold_reason",
+          "informational_kind",
+          "exclude_from_cash_forecast",
+          "notes"
+        ]
+      }
+    }
+  },
+  "required": ["tool_calls"]
+}
