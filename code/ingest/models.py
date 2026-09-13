@@ -87,11 +87,25 @@ class Flexibility(str, Enum):
 
 
 class PaymentMethod(str, Enum):
+    """Decision vocabulary used by the agent's final recommendation."""
+
     full_payment = "full_payment"
     partial_payment = "partial_payment"
     installments = "installments"
     wait = "wait"
     not_recommended = "not_recommended"
+
+
+class PaymentMethodOption(str, Enum):
+    """Input-side payment methods a user will consider or a provider offers.
+
+    Deliberately excludes ``wait`` and ``not_recommended`` because those are
+    decisions, not payment methods, and must never validate as input.
+    """
+
+    full_payment = "full_payment"
+    partial_payment = "partial_payment"
+    installments = "installments"
 
 
 class RequestType(str, Enum):
@@ -142,7 +156,21 @@ class FinancialProfile(BaseModel):
             return value
         tokens = [token.strip() for token in value.split("|") if token.strip()]
         for token in tokens:
-            PaymentMethod(token)
+            PaymentMethodOption(token)
+        return value
+
+    @field_validator(
+        "expense_categories_to_protect",
+        "expense_categories_user_is_willing_to_reduce",
+        "expense_categories_user_is_willing_to_stop",
+    )
+    @classmethod
+    def _validate_expense_categories(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        tokens = [token.strip() for token in value.split("|") if token.strip()]
+        for token in tokens:
+            EventCategory(token)
         return value
 
 
@@ -202,7 +230,7 @@ class RequestPaymentOption(BaseModel):
 
     payment_option_id: str
     request_id: str
-    payment_method: PaymentMethod
+    payment_method: PaymentMethodOption
     payment_amount: float = Field(gt=0)
     number_of_payments: int | None = Field(default=None, ge=1)
     first_payment_date: date | None = None

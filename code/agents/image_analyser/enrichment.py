@@ -7,16 +7,9 @@ from typing import Any, Mapping
 import polars as pl
 from pydantic import BaseModel
 
-UPDATABLE_FIELDS: tuple[str, ...] = (
-    "event_type",
-    "category",
-    "direction",
-    "amount",
-    "currency",
-    "event_date",
-    "settlement_date",
-    "status",
-)
+# An image only ever supplies the event's missing amount; every other field is
+# already populated in the events table.
+UPDATABLE_FIELDS: tuple[str, ...] = ("amount",)
 
 
 def compute_updates(

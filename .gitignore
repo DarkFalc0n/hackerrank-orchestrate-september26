@@ -1,4 +1,5 @@
 log.txt
+cache/
 .venv/
 venv/
 __pycache__/

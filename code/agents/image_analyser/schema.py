@@ -1,9 +1,9 @@
 """Load the image analyser's JSONC contract into a strict Pydantic model.
 
 ``output_schema.jsonc`` is the single source of truth for the analyser output.
-This module strips its comments, validates the declared enum values against the
-shared ingestion enums, and builds the Pydantic model that is passed to the
-OpenAI structured-output call.
+This module strips its comments and builds the Pydantic model that is passed to
+the OpenAI structured-output call. The contract is intentionally minimal: an
+image only supplies the event's missing ``amount`` plus a short summary.
 """
 
 from __future__ import annotations
@@ -12,29 +12,13 @@ import json
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, create_model
-
-from ...ingest.models import (
-    Currency,
-    Direction,
-    EventCategory,
-    EventStatus,
-    EventType,
-)
 
 BASE_DIR = Path(__file__).resolve().parent
 SCHEMA_FILE = BASE_DIR / "output_schema.jsonc"
 SYSTEM_PROMPT_FILE = BASE_DIR / "system_prompt.md"
-
-ENUM_FIELDS: dict[str, type] = {
-    "event_type": EventType,
-    "category": EventCategory,
-    "direction": Direction,
-    "currency": Currency,
-    "status": EventStatus,
-}
 
 _TYPE_MAP: dict[str, type] = {
     "string": str,
@@ -95,31 +79,7 @@ def load_system_prompt() -> str:
     return SYSTEM_PROMPT_FILE.read_text(encoding="utf-8").strip()
 
 
-def _enum_annotation(field_name: str, values: list[Any]) -> Any:
-    clean = tuple(value for value in values if value is not None)
-    if not clean:
-        raise ValueError(f"schema field '{field_name}' declares an empty enum")
-    expected = ENUM_FIELDS.get(field_name)
-    if expected is not None:
-        known = {member.value for member in expected.__members__.values()}
-        unknown = set(clean) - known
-        if unknown:
-            raise ValueError(
-                f"schema field '{field_name}' has values outside {expected.__name__}: "
-                f"{sorted(unknown)}"
-            )
-        missing = known - set(clean)
-        if missing:
-            raise ValueError(
-                f"schema field '{field_name}' is missing {expected.__name__} values: "
-                f"{sorted(missing)}"
-            )
-    return Optional[Literal[clean]]  # type: ignore[valid-type]
-
-
 def _annotation(field_name: str, spec: dict[str, Any]) -> Any:
-    if spec.get("enum"):
-        return _enum_annotation(field_name, list(spec["enum"]))
     if spec.get("format") == "date":
         return Optional[date]
     declared = spec.get("type")
@@ -159,7 +119,6 @@ def get_response_model() -> type[BaseModel]:
 
 
 __all__ = [
-    "ENUM_FIELDS",
     "SCHEMA_FILE",
     "SYSTEM_PROMPT_FILE",
     "build_response_model",

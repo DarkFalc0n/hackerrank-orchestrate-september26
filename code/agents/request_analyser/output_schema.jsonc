@@ -1,0 +1,61 @@
+{
+  // The request analyser returns exactly one output.csv row.
+  // Deterministic fields must be copied verbatim from the chosen plan option.
+  "type": "object",
+  "properties": {
+    "selected_plan_id": {
+      "type": "string",
+      "description": "plan_id of the chosen payment_plan_options row."
+    },
+    "amount_safe_to_pay": {
+      "type": "number",
+      "description": "Copy exactly from the chosen option; amount safe on the request date before spending changes."
+    },
+    "affordability_status": {
+      "type": "string",
+      "enum": [
+        "affordable_now",
+        "affordable_with_plan",
+        "affordable_later",
+        "not_affordable"
+      ]
+    },
+    "recommended_payment_method": {
+      "type": "string",
+      "enum": [
+        "full_payment",
+        "partial_payment",
+        "installments",
+        "wait",
+        "not_recommended"
+      ]
+    },
+    "payment_plan": {
+      "type": "string",
+      "description": "Chronological YYYY-MM-DD:amount entries separated by |, or none. Copy exactly from the chosen option."
+    },
+    "earliest_date_for_full_payment": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Copy exactly from the chosen option; null when no full payment is safe within the forecast."
+    },
+    "spending_changes_needed": {
+      "type": "string",
+      "description": "none or stop:<event_id> / reduce_to:<event_id>:<amount> entries. Copy exactly from the chosen option."
+    },
+    "decision_explanation": {
+      "type": "string",
+      "description": "One or two short sentences, in the dataset's style, grounded in the chosen option."
+    }
+  },
+  "required": [
+    "selected_plan_id",
+    "amount_safe_to_pay",
+    "affordability_status",
+    "recommended_payment_method",
+    "payment_plan",
+    "earliest_date_for_full_payment",
+    "spending_changes_needed",
+    "decision_explanation"
+  ]
+}

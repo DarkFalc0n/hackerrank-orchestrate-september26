@@ -18,6 +18,7 @@ from .models import (
     ApplyOneOffAdjustmentParams,
     Currency,
     FlagInternalTransferParams,
+    Flexibility,
     FlowDirection,
     FlowStatus,
     ForecastRow,
@@ -102,6 +103,7 @@ class ForecastLedger:
         currency: str | None = None,
         description: str | None = None,
         event_type: str | None = None,
+        flexibility: Flexibility | str | None = None,
         interval_days: int | None = None,
         stream_id: str | None = None,
         event_id: str | None = None,
@@ -119,6 +121,7 @@ class ForecastLedger:
             currency=Currency(currency or self.currency),
             date=flow_date,
             event_type=event_type,
+            flexibility=flexibility,
             interval_days=interval_days,
             stream_id=stream_id,
             event_id=event_id,
@@ -372,7 +375,7 @@ class ForecastLedger:
         for flow in self._flows:
             if not self._is_cash_active(flow):
                 continue
-            if self.start < flow.date <= self.end:
+            if self.start <= flow.date <= self.end:
                 schedule.setdefault(flow.date, []).append(flow)
 
         rows: list[ForecastRow] = []

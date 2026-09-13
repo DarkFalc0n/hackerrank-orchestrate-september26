@@ -3,7 +3,8 @@
 A group of same-signed events (direction, event type, category, description) is
 declared recurring when it has at least ``MIN_RECURRENCES`` settled occurrences,
 its median gap falls inside a supported cadence window, and enough of its gaps
-fall inside that window.
+fall inside that window. Credit streams whose amounts never settle on a stable
+value are treated as unconfirmed variable income and are not projected.
 """
 
 from __future__ import annotations
@@ -15,12 +16,13 @@ from statistics import median
 
 import polars as pl
 
-from ...ingest.models import EventStatus
+from ...ingest.models import Direction, EventStatus
 from .config import (
     CADENCE_PERIOD_DAYS,
     CADENCE_WINDOWS,
     MIN_CADENCE_CONSISTENCY,
     MIN_RECURRENCES,
+    VARIABLE_INCOME_DISTINCT_RATIO,
 )
 from .models import Cadence, RecurringEvent, RecurringFlow
 
@@ -158,6 +160,14 @@ def _build_flow(
     if not amounts:
         return None
 
+    # Unconfirmed, variable income must not be projected as if it were fixed:
+    # when the occurrence amounts never repeat, treat the stream as variable and
+    # drop it. Confirmed salary is projected separately from its scheduled row.
+    if direction == Direction.credit.value:
+        distinct = len({round(value, 2) for value in amounts})
+        if distinct / len(amounts) >= VARIABLE_INCOME_DISTINCT_RATIO:
+            return None
+
     flexibility = Counter(group["flexibility"].to_list()).most_common(1)[0][0]
     flow = RecurringFlow(
         user_id=user_id,
@@ -176,6 +186,7 @@ def _build_flow(
             _representative_day(dates) if cadence == Cadence.monthly else None
         ),
         flexibility=flexibility,
+        last_event_id=group["event_id"].to_list()[-1],
     )
     members = [
         RecurringEvent(

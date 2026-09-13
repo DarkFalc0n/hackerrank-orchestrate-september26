@@ -48,6 +48,8 @@ class RecurringFlow(BaseModel):
     anchor_day: int | None = Field(default=None, ge=1, le=31)
     flexibility: Flexibility | None = None
     first_forecast_date: date | None = None
+    last_event_id: str | None = None
+    termination_date: date | None = None
 
 
 class RecurringEvent(BaseModel):
@@ -101,6 +103,8 @@ RECURRING_FLOW_DTYPES: dict[str, Any] = {
     "anchor_day": pl.Int64,
     "flexibility": pl.String,
     "first_forecast_date": pl.Date,
+    "last_event_id": pl.String,
+    "termination_date": pl.Date,
 }
 
 RECURRING_EVENT_DTYPES: dict[str, Any] = {

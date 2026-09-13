@@ -77,6 +77,7 @@ class MessageAnalyserResult:
 
     message_analysis: pl.DataFrame
     ledgers: dict[str, ForecastLedger] = field(default_factory=dict)
+    usage: pl.DataFrame | None = None
     store: InMemoryDataStore | None = None
 
 

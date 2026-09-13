@@ -38,8 +38,12 @@ def occurrences(flow: RecurringFlow, start: date, end: date) -> list[date]:
 
     Weekly and biweekly flows are stepped by a fixed number of days. Monthly
     flows are anchored on the flow's ``anchor_day`` so month-end clamping (for
-    example the 31st) does not drift across months.
+    example the 31st) does not drift across months. A flow with a
+    ``termination_date`` (for example the final paycheck) never projects an
+    occurrence after that date, which is itself included.
     """
+    if flow.termination_date is not None and flow.termination_date < end:
+        end = flow.termination_date
     if end < start:
         return []
     cadence = Cadence(flow.cadence)
@@ -117,8 +121,8 @@ def build_forecast(
 ) -> list[ForecastEntry]:
     """Project a daily balance for ``horizon`` days from ``start``.
 
-    Day 0 closes at ``opening_balance``; recurring flows due on day 0 are not
-    applied because the current balance already reflects them.
+    Recurring flows due on the request date (day 0) are applied too: a bill or
+    transfer dated the request date is still an obligation the user must cover.
     """
     end = start + timedelta(days=horizon)
     schedule = _schedule(flows, start, end)
@@ -127,7 +131,7 @@ def build_forecast(
     balance = float(opening_balance)
     for day_index in range(horizon + 1):
         current = start + timedelta(days=day_index)
-        todays = schedule.get(current, []) if day_index > 0 else []
+        todays = schedule.get(current, [])
         inflow = sum(flow.amount for flow in todays if flow.direction == "credit")
         outflow = sum(flow.amount for flow in todays if flow.direction == "debit")
         balance += inflow - outflow

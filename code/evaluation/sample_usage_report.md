@@ -2,10 +2,10 @@
 
 - Provider(s): OpenAI-compatible endpoint
 - Dataset: `C:\Users\DarkFalcon\Projects\hackerrank-orchestrate-september26\dataset`
-- Requests: 250
-- Started: 2026-09-13T17:39:45
-- Finished: 2026-09-13T17:43:47
-- LLM calls: 362
+- Requests: 25
+- Started: 2026-09-13T17:38:18
+- Finished: 2026-09-13T17:39:32
+- LLM calls: 42
 
 - Model(s): mimo-v2.5-pro
 
@@ -13,20 +13,20 @@
 
 | Agent | Model | Calls | Input tokens | Output tokens | Total tokens | Est. cost |
 | --- | --- | --- | --- | --- | --- | --- |
-| message_analyser | mimo-v2.5-pro | 198 | 616046 | 74661 | 690707 | n/a |
-| request_analyser | mimo-v2.5-pro | 164 | 289174 | 26269 | 315443 | n/a |
+| message_analyser | mimo-v2.5-pro | 17 | 52814 | 6378 | 59192 | n/a |
+| request_analyser | mimo-v2.5-pro | 25 | 44033 | 4061 | 48094 | n/a |
 
 ## Totals
 
 | Metric | Value |
 | --- | --- |
-| Total calls | 362 |
-| Total input tokens | 905220 |
-| Total output tokens | 100930 |
-| Total tokens | 1006150 |
-| Average input tokens / request | 3620.88 |
-| Average output tokens / request | 403.72 |
-| Average total tokens / request | 4024.60 |
+| Total calls | 42 |
+| Total input tokens | 96847 |
+| Total output tokens | 10439 |
+| Total tokens | 107286 |
+| Average input tokens / request | 3873.88 |
+| Average output tokens / request | 417.56 |
+| Average total tokens / request | 4291.44 |
 | Estimated total cost (USD) | n/a |
 | Estimated cost per request (USD) | n/a |
 

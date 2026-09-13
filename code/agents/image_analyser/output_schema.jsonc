@@ -1,7 +1,8 @@
 {
   // Strict structured-output contract for the image_analyser agent.
-  // Every key is required by the API; use null when the image does not allow
-  // the value to be deduced with confidence.
+  // An image is only ever the source of a financial event's missing amount;
+  // every other field is already populated in the events table, so the model
+  // returns just the amount and a short summary.
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -9,94 +10,14 @@
       "type": "string",
       "description": "One short sentence describing what the image is."
     },
-    "event_type": {
-      "type": ["string", "null"],
-      "enum": [
-        "expense",
-        "income",
-        "debt_payment",
-        "subscription",
-        "refund",
-        "investment_purchase",
-        "investment_sale",
-        "investment_valuation"
-      ],
-      "description": "Kind of financial event evidenced by the image."
-    },
-    "category": {
-      "type": ["string", "null"],
-      "enum": [
-        "cloud_storage",
-        "debt_repayment",
-        "delivery_membership",
-        "dining",
-        "education",
-        "entertainment",
-        "family_support",
-        "groceries",
-        "gym",
-        "healthcare",
-        "housing",
-        "insurance",
-        "investment",
-        "music_subscription",
-        "rent",
-        "salary",
-        "shopping",
-        "streaming",
-        "transport",
-        "utilities",
-        "windfall",
-        "work_expense"
-      ],
-      "description": "Spending or income category of the event."
+    "amount": {
+      "type": ["number", "null"],
+      "description": "Final settled/payable transaction amount as a plain number, or null when no amount is shown."
     },
     "direction": {
       "type": ["string", "null"],
-      "enum": ["credit", "debit", "non_cash"],
-      "description": "Cash-flow direction of the event."
-    },
-    "amount": {
-      "type": ["number", "null"],
-      "description": "Transaction amount as a plain number."
-    },
-    "currency": {
-      "type": ["string", "null"],
-      "enum": ["INR", "ZAR", "IDR", "USD", "EUR"],
-      "description": "Currency code of the amount."
-    },
-    "event_date": {
-      "type": ["string", "null"],
-      "format": "date",
-      "description": "Date the event occurred (YYYY-MM-DD)."
-    },
-    "settlement_date": {
-      "type": ["string", "null"],
-      "format": "date",
-      "description": "Distinct settlement or clearing date, if shown (YYYY-MM-DD)."
-    },
-    "status": {
-      "type": ["string", "null"],
-      "enum": [
-        "settled",
-        "pending",
-        "scheduled",
-        "failed",
-        "cancelled",
-        "unrealized"
-      ],
-      "description": "Settlement status evidenced by the image."
+      "description": "Whether the image evidences money leaving the account (debit) or arriving (credit); null if unclear."
     }
   },
-  "required": [
-    "summary",
-    "event_type",
-    "category",
-    "direction",
-    "amount",
-    "currency",
-    "event_date",
-    "settlement_date",
-    "status"
-  ]
+  "required": ["summary", "amount", "direction"]
 }

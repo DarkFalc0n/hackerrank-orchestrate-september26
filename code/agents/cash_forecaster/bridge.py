@@ -55,8 +55,10 @@ def recurring_flows_to_ledger(
                 amount=flow.amount,
                 flow_date=day,
                 event_type=flow.event_type,
+                flexibility=flow.flexibility,
                 interval_days=flow.period_days,
                 stream_id=stream_id,
+                event_id=flow.last_event_id,
             )
     return ledger
 

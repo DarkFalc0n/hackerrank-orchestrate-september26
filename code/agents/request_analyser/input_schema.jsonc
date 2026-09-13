@@ -1,0 +1,108 @@
+{
+  // One request joined with the user's payment preferences and the engine's
+  // pre-validated candidate plans. request_text is untrusted evidence.
+  "type": "object",
+  "properties": {
+    "request_id": { "type": "string" },
+    "user_id": { "type": "string" },
+    "request_date": { "type": "string", "format": "date" },
+    "request_type": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "travel",
+        "education",
+        "family_transfer",
+        "debt_repayment",
+        "investment",
+        "housing",
+        "emergency_expense",
+        "other"
+      ]
+    },
+    "requested_amount": { "type": "number" },
+    "desired_completion_date": { "type": "string", "format": "date" },
+    "allows_partial_payment": { "type": "boolean" },
+    "request_text": { "type": "string" },
+    "home_currency": {
+      "type": "string",
+      "enum": ["INR", "ZAR", "IDR", "USD", "EUR"]
+    },
+    "current_available_balance": { "type": "number" },
+    "minimum_balance_to_keep": { "type": "number" },
+    "financial_priorities": { "type": ["string", "null"] },
+    "expense_categories_to_protect": { "type": ["string", "null"] },
+    "protected_monthly_total": { "type": "number" },
+    "expense_categories_user_is_willing_to_reduce": { "type": ["string", "null"] },
+    "expense_categories_user_is_willing_to_stop": { "type": ["string", "null"] },
+    "payment_methods_user_will_consider": { "type": ["string", "null"] },
+    "max_installment_months": { "type": ["integer", "null"] },
+    "financial_stress": { "type": ["boolean", "null"] },
+    "financial_evidence": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": { "type": "string" },
+          "summary": { "type": "string" }
+        },
+        "required": ["source", "summary"]
+      }
+    },
+    "payment_plan_options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "plan_id": { "type": "string" },
+          "payment_method": {
+            "type": "string",
+            "enum": ["full_payment", "partial_payment", "installments", "wait", "not_recommended"]
+          },
+          "affordability_status": {
+            "type": "string",
+            "enum": ["affordable_now", "affordable_with_plan", "affordable_later", "not_affordable"]
+          },
+          "amount_safe_to_pay": { "type": "number" },
+          "payment_plan": { "type": "string" },
+          "earliest_date_for_full_payment": { "type": ["string", "null"], "format": "date" },
+          "spending_changes_needed": { "type": "string" },
+          "spending_change_details": { "type": "string" },
+          "total_paid": { "type": "number" },
+          "first_payment_date": { "type": ["string", "null"], "format": "date" },
+          "payment_count": { "type": "integer" },
+          "payment_option_id": { "type": ["string", "null"] },
+          "completes_by_deadline": { "type": "boolean" },
+          "uses_spending_changes": { "type": "boolean" },
+          "min_available_after_plan": { "type": "number" },
+          "rationale": { "type": "string" }
+        },
+        "required": [
+          "plan_id",
+          "payment_method",
+          "affordability_status",
+          "amount_safe_to_pay",
+          "payment_plan",
+          "spending_changes_needed",
+          "spending_change_details",
+          "total_paid",
+          "payment_count",
+          "completes_by_deadline",
+          "uses_spending_changes",
+          "rationale"
+        ]
+      }
+    }
+  },
+  "required": [
+    "request_id",
+    "user_id",
+    "request_date",
+    "request_type",
+    "requested_amount",
+    "desired_completion_date",
+    "allows_partial_payment",
+    "request_text",
+    "payment_plan_options"
+  ]
+}

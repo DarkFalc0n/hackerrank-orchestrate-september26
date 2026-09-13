@@ -14,7 +14,7 @@ from typing import Any
 import polars as pl
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from ...ingest.models import Currency, Direction, EventStatus
+from ...ingest.models import Currency, Direction, EventStatus, Flexibility
 
 
 class FlowDirection(str, Enum):
@@ -191,6 +191,7 @@ class ScheduledFlow(BaseModel):
     currency: Currency
     date: date
     event_type: str | None = None
+    flexibility: Flexibility | None = None
     interval_days: int | None = Field(default=None, gt=0)
     stream_id: str | None = None
     event_id: str | None = None

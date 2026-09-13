@@ -105,11 +105,11 @@ def _already_projected(
             continue
         if description is not None and flow.description == description:
             return True
-        if (
-            description is None
-            and flow.category == category
-            and abs(flow.amount - amount) < 1e-6
-        ):
+        # The same projected payment may be labelled differently by the
+        # stream's history and by the scheduled row (for example a settled
+        # "Primary household salary" versus the scheduled "Next confirmed
+        # salary"). Match on category and amount so it is not inserted twice.
+        if flow.category == category and abs(flow.amount - amount) < 1e-6:
             return True
     return False
 
@@ -167,7 +167,7 @@ def resolve_pending_scheduled_events(
             continue
 
         params = ScheduleReceivableOrPayableParams(
-            direction=FlowDirection(event.direction.value),
+            direction=FlowDirection(event.direction),
             category=category,
             amount=amount,
             currency=Currency(ledger_currency),
